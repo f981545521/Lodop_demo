@@ -6,9 +6,11 @@
 </head>
 <script type="text/javascript" src="LodopFuncs.js"></script>
 <body>
-<button type="button" onclick="printGoodsCode()">批量打印物品码</button>
+<button type="button" onclick="printGoodsCode(1)">打印单个物品码</button>
+<button type="button" onclick="printGoodsCode(3)">批量打印物品码</button>
 <br/>
 <button type="button" onclick="printStorageCode()">打印库位码</button>
+<button type="button" onclick="printStorageCode2()">打印库位码</button>
 </body>
 
 <script>
@@ -43,14 +45,35 @@
             console.log(result)
         }
     }
+    function printStorageCode2() {
+        LODOP = getLodop();
+        checkPrint();
+        LODOP.SET_PRINT_MODE("SEND_RAW_DATA_ENCODE", "GBK");
+        if (LODOP.CVERSION) {
+            LODOP.On_Return = function (TaskID, Value) {
+                if (Value) {
+                    console.log("发送命令成功!");
+                } else {
+                    console.log("发送命令失败!");
+                }
+            };
+            var strData = "^XA\n" +
+                "^FO5,25\n" +
+                "^BCN,180,Y,N,N\n" +
+                "^FDA005-A25-B45^FS\n" +
+                "^XZ";
+            var result = LODOP.SEND_PRINT_RAWDATA(strData);
+            console.log(result)
+        }
+    }
 
     /**
      * 打印物品码
      */
-    function printGoodsCode() {
+    function printGoodsCode(num) {
         LODOP = getLodop();
         checkPrint();
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < num; i++) {
             LODOP.SET_PRINT_MODE("SEND_RAW_DATA_ENCODE", "GBK");
             if (LODOP.CVERSION) {
                 LODOP.On_Return = function (TaskID, Value) {
