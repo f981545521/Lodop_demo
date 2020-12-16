@@ -1,0 +1,212 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>WEB打印控件LODOP的样例十一:演示直接打印条形码</title>
+
+    <script language="javascript" src="LodopFuncs.js"></script>
+    <object id="LODOP_OB" classid="clsid:2105C259-1E0C-4534-8141-A753534CB4CA" width=0 height=0>
+        <embed id="LODOP_EM" type="application/x-print-lodop" width=0 height=0
+               pluginspage="install_lodop32.exe"></embed>
+    </object>
+</head>
+<body>
+<style>
+    @media print {
+        .noprint {
+            display: none
+        }
+    }
+</style>
+
+<h2><font color="#009999">演示如何打印条形码：</font>
+</h2>
+<p>Lodop绘制条码图功能让条码打印变得很简单，客户端不用安装专门的条码字库，该函数格式如下：<span LANG="ZH"><font color="#0000FF" size="3"><br>
+ADD_PRINT_BARCODE(Top,Left,Width,Height,BarCodeType,BarCodeValue);</font></span></p>
+<p>关键参数含义:</p>
+<p><span LANG="ZH"><font color="#0000FF" size="3">Width</font></span><font color="#0000FF"> </font><font
+        color="#000000">条码的总宽度，计量单位px（1px=1/96英寸）<br>
+</font><span LANG="ZH"><font color="#0000FF" size="3">Height</font></span><font color="#0000FF"> </font><font
+        color="#000000">条码的总高度（一维条码时包括文字高度）</font><span LANG="ZH"><font color="#0000FF" size="3"><br>
+BarCodeType</font></span> 条码的类型（规制）名称<span LANG="ZH"><font color="#0000FF" size="3"><br>                
+BarCodeValue</font></span><font color="#0000FF"> </font><font color="#000000">条码值</font></p>
+<p><font size="3">目前控件支持的条码类型有如下26种，包含24种一维码和2种二维码：
+</font></p>
+<table border="1" width="62%" height="75">
+    <tr>
+        <td width="20%" valign="top" height="69"><span LANG="ZH"><font color="#009999" size="3">128A<br>128B<br>128C<br>
+      128Auto<br>EAN8<br>
+    EAN13</font></span></td>
+        <td width="20%" valign="top" height="69"><span LANG="ZH">
+    <font color="#009999" size="3">EAN128A<br>EAN128B<br>EAN128C<br>Code39<br>
+    39Extended<br>
+      2_5interleaved</font></span></td>
+        <td width="20%" valign="top" height="69"><span LANG="ZH">
+    <font color="#009999" size="3">2_5industrial<br>2_5matrix<br>UPC_A<br>
+    UPC_E0<br>
+      UPC_E1<br>UPCsupp2</font></span></td>
+        <td width="20%" valign="top" height="69"><span LANG="ZH">
+    <font color="#009999" size="3">UPCsupp5<br>Code93<br>
+    93Extended<br>
+      MSI<br>PostNet<br>Codabar</font></span></td>
+        <td width="20%" valign="top" height="69"><span LANG="ZH"><font color="#0000FF" size="3">QRCode<br>
+    PDF</font></span><font color="#0000FF">417</font></td>
+    </tr>
+</table>
+<p><b>一、演示各种条码</b></p>
+
+<p>看看演示：<input type="button" value="打印预览" name="B3" onclick="prn_Preview()">
+    <input type="button" value="打印设计" name="B3" onclick="prn_Design()"></p>
+    <input type="button" value="打印！！！" name="B3" onclick="prn_PrintAll()"></p>
+
+<p>注意：打印设计中改变对象区域大小时，条码会自动随之适应调整，也可以360度范围随便定义旋转方向。</p>
+
+<p>双击对象，在弹出的属性窗口中修改其它属性，然后生成程序代码看看其实现方法。</p>
+
+
+<p><a href="PrintSampIndex.html">&lt;&lt;回样例目录</a>
+</p>
+
+<div id="div2">
+
+    <style>table,th{border:none;height:18px} td{border: 1px solid #000;height:18px}</style>
+
+    <table border=0 cellSpacing=0 cellPadding=0 width="100%" bordercolor="#000000" style="border-collapse:collapse">
+        <caption><b><font face="黑体" size="4">南京医科大学附属口腔医院配送单</font></b></caption>
+        <thead>
+        <tr>
+            <th>科室：正畸科</th>
+            <th colspan="2">位置：新大楼5楼</th>
+        </tr>
+        <tr>
+            <td width="5%"><b>序号</b></td>
+            <td width="10%"><b>产品名称</b></td>
+            <td width="5%"><b>规格型号</b></td>
+            <td width="5%"><b>单位</b></td>
+            <td width="10%"><b>批号</b></td>
+            <td width="10%"><b>生产日期</b></td>
+            <td width="10%"><b>有效期</b></td>
+            <td width="5%"><b>配送数量</b></td>
+            <td width="10%"><b>误差值</b></td>
+            <td width="10%"><b>注册证号</b></td>
+            <td width="10%"><b>单价（元）</b></td>
+            <td width="10%"><b>金额（元）</b></td>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>1</td>
+            <td>产品A</td>
+            <td>100/50-35/5</td>
+            <td>只</td>
+            <td>1002000</td>
+            <td>20201215</td>
+            <td>20221215</td>
+            <td>800</td>
+            <td></td>
+            <td>国械注进20173776958</td>
+            <td>1000</td>
+            <td>1200</td>
+        </tr>
+
+        </tbody>
+        <tfoot>
+        <tr>
+            <th width="100%" colspan="3"><b>经办人：</b></th>
+        </tr>
+        <tr>
+            <th width="100%" colspan="3">　</th>
+        </tr>
+        <tr>
+            <td width="100%" colspan="3"><b>带格线的每页备注：</b></td>
+        </tr>
+        </tfoot>
+    </table>
+</div>
+<div id="div333">
+
+    <style>table,th{border:none;height:18px} td{border: 1px solid #000;height:18px}</style>
+
+    <table border=0 cellSpacing=0 cellPadding=0 width="100%" bordercolor="#000000" style="border-collapse:collapse">
+        <caption><b><font face="黑体" size="4">南京医科大学附属口腔医院配送单</font></b></caption>
+        <thead>
+        <tr>
+            <td width="5%"><b>序号</b></td>
+            <td width="10%"><b>产品名称</b></td>
+            <td width="5%"><b>规格型号</b></td>
+            <td width="5%"><b>单位</b></td>
+            <td width="10%"><b>批号</b></td>
+            <td width="10%"><b>生产日期</b></td>
+            <td width="10%"><b>有效期</b></td>
+            <td width="5%"><b>配送数量</b></td>
+            <td><b>误差值</b></td>
+            <td><b>注册证号</b></td>
+            <td><b>单价（元）</b></td>
+            <td><b>金额（元）</b></td>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>1</td>
+            <td>产品A</td>
+            <td>100/50-35/5</td>
+            <td>只</td>
+            <td>1002000</td>
+            <td>20201215</td>
+            <td>20221215</td>
+            <td>800</td>
+            <td></td>
+            <td>国械注进20173776958</td>
+            <td>1000</td>
+            <td>1200</td>
+        </tr>
+
+        </tbody>
+        <tfoot>
+        <tr>
+            <th width="100%" colspan="3"><b>经办人：</b></th>
+        </tr>
+        <tr>
+            <th width="100%" colspan="3">　</th>
+        </tr>
+        <tr>
+            <td width="100%" colspan="3"><b>带格线的每页备注：</b></td>
+        </tr>
+        </tfoot>
+    </table>
+</div>
+
+
+<script language="javascript" type="text/javascript">
+    var LODOP; //声明为全局变量
+    function prn_Preview() {
+        CreatePrintPage();
+        LODOP.PREVIEW();
+    };
+
+    function prn_Design() {
+        CreatePrintPage();
+        LODOP.PRINT_DESIGN();
+    }
+    function prn_PrintAll() {
+        window.print();
+    }
+
+    function CreatePrintPage() {
+        LODOP = getLodop(document.getElementById('LODOP1'), document.getElementById('LODOP_EM1'));
+        LODOP.SET_PRINT_PAGESIZE(1, 2413, 1397, "打印纸AAA");
+        AddPrintContent()
+    }
+
+    function AddPrintContent() {
+        LODOP = getLodop();
+        LODOP.PRINT_INIT("单据打印");
+
+        LODOP.ADD_PRINT_BARCODE(10,500,300,40,"128A","SHD20201214345678");
+        LODOP.ADD_PRINT_TABLE(50,10,"50%",220,document.getElementById("div333").innerHTML);
+    }
+
+</script>
+
+</body>
+</html>
