@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+    <meta http-equiv='Content-Type' content='text/html; charset=utf-8'/>
+    <title>灵天网页打印接口演示</title>
+    <script type='text/javascript'>
+        var wsocket;
+        var totalNum;
+        var retryGet;
+        var TID;
+
+        function connection()//连接打印后台
+        {
+            var wsserver = "ws://" + document.getElementById("serverIP").value + ":" + document.getElementById("serverPort").value + "/"
+            if ('WebSocket' in window) {
+                wsocket = new WebSocket(wsserver);
+            } else if ('MozWebSocket' in window) {
+                wsocket = new MozWebSocket(wsserver);
+            } else {
+                alert('不支持当前浏览器！');
+            }
+
+            //注册各类回调
+            wsocket.onopen = function () {
+                document.getElementById("status").value = "连接打印后台成功！";
+                //wsocket.send('我是客户端，我准备好了。'); //给服务器发送消息
+            }
+
+            wsocket.onclose = function (event) {
+                document.getElementById("status").value = "与打印后台断开连接！";
+            }
+
+            wsocket.onerror = function ()//出错的提示
+            {
+                //alert('数据传输错误！');
+            }
+
+            wsocket.onmessage = function (receiveMsg) {
+
+                //alert('有新消息！');
+                if (receiveMsg.data.split(":")[0] == "TID")//TID返回数据格式是：TID:E208011602712F987500104E
+                {
+                    TIDCode = receiveMsg.data.split(":")[1];
+                    document.getElementById("status").value = TIDCode;//显示TID
+
+                    //alert( TIDCode);
+
+                    if (TIDCode == "X") //获取UID数据不正常，空打印一张标签
+                    {
+                        printlabel("");
+                        wsocket.send('ZM_ReadRFTagDataUSB|255|0|15|0|' + TID + '|3000');// wsocket.send('ZM_HF_GetTagInfo|0|1|0|0|0|0|null|1500');//读取UID,已经带Openport(255)
+                    } else {
+                        if (totalNum > 0) {
+                            printlabel(TIDCode);
+
+                            totalNum--;
+
+                            wsocket.send('ZM_ReadRFTagDataUSB|255|0|15|0|' + TID + '|3000');//wsocket.send('ZM_HF_GetTagInfo|0|1|0|0|0|0|null|1500');//读取UID,已经带Openport(255)
+                        } else  //打印最后一张
+                        {
+                            printlabel(TIDCode);
+                        }
+                    }
+
+
+                } else {
+                    document.getElementById("status").value = receiveMsg.data;//显示服务器传回的消息
+                    //alert(document.getElementById("status").value);
+
+                    receiveMsg.data = 0;
+
+                    if (document.getElementById("status").value == "-5003") {
+                        //alert("-5003_ok");
+
+                        //超时,再次获取重新获取USB数据
+                        if (retryGet > 0) {
+                            retryGet--;
+                            //wsocket.send('ZM_HF_GetTagInfo|0|1|0|0|0|0|null|2000');//读取UID,已经带Openport(255)
+                            wsocket.send('ZM_ReadRFTagDataUSB|255|0|15|0|' + TID + '|3000');//读取UHF TID
+
+                        }
+
+
+                    }
+                }
+
+
+            }
+
+        }
+
+        function sendMessage()//向打印后台发送消息
+        {
+            totalNum = 1;  //打印总张数; 180809
+            retryGet = 2;  //获取出错时,重试次数;  180810
+            totalNum--;
+
+
+            wsocket.send('ZM_ReadRFTagDataUSB|255|0|15|0|' + TID + '|3000');// //wsocket.send('ZM_HF_GetTagInfo|0|1|0|0|0|0|null|2000');//读取UID,已经带Openport(255)
+            //printlabel('12345678901234'); //单独打印测试
+
+        }
+
+        function printlabel(TIDCode) {
+            console.info(TIDCode);
+            wsocket.send('OpenPort|255');//打开端口
+            wsocket.send('ZM_ClearBuffer');//清空
+            wsocket.send('ZM_SetPrintSpeed|4');//设置速度
+            wsocket.send('ZM_SetDarkness|12');//设置温度
+            wsocket.send('ZM_SetLabelHeight|50|2');//设置标签高度和间隙
+            wsocket.send('ZM_SetLabelWidth|450');//设置标签宽度
+            //if( TIDCode.length>0)
+            wsocket.send('ZM_DrawTextTrueTypeW|250|170|10|0|宋体|1|500|0|1|0|A1|12345678');//打印文字
+
+
+            wsocket.send('ZM_DrawTextTrueTypeW|100|50|24|0|Arial|1|400|0|0|0|A3|清洗液（CL-05）');
+
+            wsocket.send('ZM_DrawTextTrueTypeW|100|100|48|48|Arial|1|400|0|0|0|A2|Test文字2');//打印文字
+            wsocket.send('ZM_DrawLineXor|250|170|200|3');//画直线
+            //wsocket.send('ZM_DrawBar2D_QR|16|120|8|8|0|2|4|0|8|ZMIN Test');//打印QR二维条码
+            //wsocket.send('ZM_DrawBarcode|250|170|0|1|30|3|30|66|2018072001');//打印一维条码
+            wsocket.send('ZM_PrintLabel_R|1|1');//打印标签
+            wsocket.send('ClosePort');//关闭端口
+            //180813 此处需增加延时,保证打印完当前标签;
+            var date = new Date();
+            var curDate = null;
+            do {
+                curDate = new Date();
+            }
+            while (curDate - date < 2000);
+
+        }
+
+        function getStatus()//获取打印机状态
+        {
+            wsocket.send('OpenPort|255');
+            wsocket.send('ZM_ErrorReportEx|0|0|0|1|0');
+            wsocket.send('ClosePort');
+        }
+
+    </script>
+    <style type="text/css">
+        #status {
+            width: 226px;
+        }
+
+        #serverIP {
+            width: 150px;
+        }
+
+        #serverPort {
+            width: 62px;
+        }
+    </style>
+</head>
+<body>
+打印后台IP：<input type="text" name="serverIP" id="serverIP" value="127.0.0.1"/>&nbsp; 端口号：<input type="text"
+                                                                                             name="serverPort"
+                                                                                             id="serverPort"
+                                                                                             value="1808"/>&nbsp;
+<input type='button' value='连线' onclick='connection()'/><br/>
+<br/>
+<input type='button' value='打印标签' onclick='sendMessage()'/>
+<input type='button' value='获取状态' onclick='getStatus()'/>
+<td align="center" style="width: 166px">
+    打印机状态：
+</td>
+<td>
+    <input type="text" name="status" id="status" readonly="readonly"/>
+</td>
+</body>
+</html>
