@@ -45,7 +45,11 @@
         for (var i = 0; i < count; i++) {
             var printerName = LODOP.GET_PRINTER_NAME(i);
             html = html + "<option value=\"" + i + "\">" + printerName + "</option>";
-            console.log("打印机：" + i + "：" + printerName)
+            if (printerName.indexOf("ZDesigner") !== -1){
+                console.log("(标签)打印机：" + i + "：" + printerName)
+            }else {
+                console.log("打印机：" + i + "：" + printerName)
+            }
         }
         printerList.innerHTML = html;
     }
@@ -172,7 +176,7 @@
             "\n" +
             "^FO20,20\n" +
             "^AZN,35,35\n" +
-            "^FD 切口皮肤组织牵开扩张器扩张器扩张器^FS\n" +
+            "^FD ○切口皮肤组织牵开扩张器扩张器扩张器^FS\n" +
             "\n" +
             "^FO20,60\n" +
             "^AZN,20,20\n" +
