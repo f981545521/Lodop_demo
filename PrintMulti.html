@@ -11,22 +11,91 @@
 <br/>
 <button type="button" onclick="printStorageCode()">打印库位码</button>
 <button type="button" onclick="printStorageCode2()">打印库位码</button>
+<br/>
+<br/>
+<br/>
+<button type="button" onclick="printAcceptanceCode()">打印验收条码</button>
+<br/>
+<button type="button" onclick="showPrinters()">选择打印机</button>
+<select id="printerList">
+
+</select>
+<script type="text/javascript" src="lib/jquery-3.5.1.js"></script>
+
 </body>
 
 <script>
+
     var LODOP; //声明为全局变量
+
+    function showPrinters() {
+        LODOP = getLodop();
+
+        if (LODOP.VERSION) {
+            if (LODOP.CVERSION) {
+                console.log("当前有WEB打印服务C-Lodop可用! C-Lodop版本:" + LODOP.CVERSION + "(内含Lodop" + LODOP.VERSION + ")");
+            } else {
+                console.log("本机已成功安装了Lodop控件！ 版本号:" + LODOP.VERSION);
+            }
+        }
+
+        var count = LODOP.GET_PRINTER_COUNT();
+        var printerList = document.getElementById("printerList");
+        var html = "";
+        for (var i = 0; i < count; i++) {
+            var printerName = LODOP.GET_PRINTER_NAME(i);
+            html = html + "<option value=\"" + i + "\">" + printerName + "</option>";
+            console.log("打印机：" + i + "：" + printerName)
+        }
+        printerList.innerHTML = html;
+    }
+
+    function printAcceptanceCode() {
+        LODOP = getLodop();
+        LODOP.SET_PRINT_MODE("SEND_RAW_DATA_ENCODE", "GBK");
+        if (LODOP.CVERSION) {
+            LODOP.On_Return = function (TaskID, Value) {
+                if (Value) {
+                    console.log("发送命令成功!");
+                } else {
+                    console.log("发送命令失败!");
+                }
+            };
+            var strData = "^XA\n" +
+                "^SEE:GB18030.DAT^FS\n" +
+                "^CWZ,E:SIMSUN.FNT\n" +
+                "^CI26\n" +
+                "^JMA^LL300^PW400^MD10^PR2^PON^LRN^LH0,0\n" +
+                "\n" +
+                "\n" +
+                "^FO0,80\n" +
+                "^AZN,35,35\n" +
+                "^FD 南京正雅医药集团有限公司验收单^FS\n" +
+                "\n" +
+                "^FO30,120\n" +
+                "^B7N,8,4,5,,N\n" +
+                "^FD " + "YS2021011500014" + " ^FS\n" +
+                "\n" +
+                "^FO80,200\n" +
+                "^A2N,20,10\n" +
+                "^FD " + "YS2021011500014" + " ^FS\n" +
+                "\n" +
+                "^XZ";
+            var result = LODOP.SEND_PRINT_RAWDATA(strData);
+            console.log(result)
+        }
+    }
 
     function checkPrint() {
         var paperHeigth = LODOP.GET_PRINTER_NAME('-1:PaperLength');
         //默认打印机纸高
-        if (paperHeigth != 300){
+        if (paperHeigth != 300) {
             throw new Error("请检查默认打印机配置！");
         }
     }
-    
+
     function printStorageCode() {
         LODOP = getLodop();
-        checkPrint();
         LODOP.SET_PRINT_MODE("SEND_RAW_DATA_ENCODE", "GBK");
         if (LODOP.CVERSION) {
             LODOP.On_Return = function (TaskID, Value) {
@@ -45,9 +114,9 @@
             console.log(result)
         }
     }
+
     function printStorageCode2() {
         LODOP = getLodop();
-        checkPrint();
         LODOP.SET_PRINT_MODE("SEND_RAW_DATA_ENCODE", "GBK");
         if (LODOP.CVERSION) {
             LODOP.On_Return = function (TaskID, Value) {
@@ -72,7 +141,9 @@
      */
     function printGoodsCode(num) {
         LODOP = getLodop();
-        checkPrint();
+        var index = document.getElementById("printerList").value;
+        console.log(index)
+        LODOP.SET_PRINTER_INDEX(index)
         for (let i = 0; i < num; i++) {
             LODOP.SET_PRINT_MODE("SEND_RAW_DATA_ENCODE", "GBK");
             if (LODOP.CVERSION) {
@@ -101,7 +172,7 @@
             "\n" +
             "^FO20,20\n" +
             "^AZN,35,35\n" +
-            "^FD 切口皮肤组织牵开扩张器^FS\n" +
+            "^FD 切口皮肤组织牵开扩张器扩张器扩张器^FS\n" +
             "\n" +
             "^FO20,60\n" +
             "^AZN,20,20\n" +
@@ -113,7 +184,7 @@
             "\n" +
             "^FO20,110\n" +
             "^AZN,20,20\n" +
-            "^FD 效期:20200827^FS\n" +
+            "^FD 效期:20200827     数量：100个^FS\n" +
             "\n" +
             "^FO30,140\n" +
             "^B7N,8,4,5,,N\n" +
