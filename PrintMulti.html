@@ -16,6 +16,8 @@
 <br/>
 <button type="button" onclick="printAcceptanceCode()">打印验收条码</button>
 <br/>
+<button type="button" onclick="testMaxeLength()">测试1000个能不能打</button>
+<br/>
 <button type="button" onclick="showPrinters()">选择打印机</button>
 <select id="printerList">
 
@@ -187,6 +189,28 @@
                 console.log(result)
             }
         }
+    }
+
+    function testMaxeLength() {
+        var finalStr = "";
+        for (let i = 0; i < 1000000; i++) {
+            finalStr += formatRowData("AAAAAA" + i);
+        }
+        console.log(finalStr.length)
+        //正式开始
+/*        LODOP = getLodop();
+        LODOP.SET_PRINT_MODE("SEND_RAW_DATA_ENCODE", "GBK");
+        if (LODOP.CVERSION) {
+            LODOP.On_Return = function (TaskID, Value) {
+                if (Value) {
+                    console.log("发送命令成功!");
+                } else {
+                    console.log("发送命令失败!");
+                }
+            };
+            var result = LODOP.SEND_PRINT_RAWDATA(finalStr);
+            console.log(result)
+        }*/
     }
 
 
