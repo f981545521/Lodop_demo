@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<script type="text/javascript" src="LodopFuncs.js"></script>
+<body>
+<button type="button" onclick="printGoodsCode(1)">打印单个物品码</button>
+<button type="button" onclick="printGoodsCode(3)">批量打印物品码</button>
+<br/>
+<button type="button" onclick="printStorageCode()">打印库位码</button>
+<button type="button" onclick="printStorageCode2()">打印库位码</button>
+<br/>
+<br/>
+<br/>
+<button type="button" onclick="printAcceptanceCode()">打印验收条码</button>
+<br/>
+<button type="button" onclick="testMaxeLength()">测试1000个能不能打</button>
+<br/>
+<button type="button" onclick="showPrinters()">选择打印机</button>
+<select id="printerList">
+
+</select>
+<br/>
+<textarea id="content" style="width: 800px;height: 300px">^XA^SEE:GB18030.DAT^FS^CWZ,E:SIMSUN.FNT^CI26^JMA^LL300^PW400^MD10^PR2^PON^LRN^LH0,0^FO20,20^AZN,35,35^FD XiaoMi 11^FS^FO20,60^AZN,20,20^FD 规格:128G^FS^FO20,85^AZN,20,20^FD 型号:常规^FS^FO20,110^AZN,20,20^FD 效期:20221102     数量：3付^FS^FO30,140^B7N,8,4,5,,N^FD 564491830433398784 ^FS^FO70,220^A2N,20,10^FD 564491830433398784 ^FS^XZ</textarea>
+<br/>
+<button type="button" onclick="sendTextAreaContent()">发送</button>
+
+</body>
+
+<script>
+
+    var LODOP; //声明为全局变量
+
+    function sendTextAreaContent() {
+        var v = document.getElementById("content").value;
+        console.log(v.trim())
+        LODOP = getLodop();
+        LODOP.SET_PRINT_MODE("SEND_RAW_DATA_ENCODE", "GBK");
+        if (LODOP.CVERSION) {
+            LODOP.On_Return = function (TaskID, Value) {
+                if (Value) {
+                    console.log("发送命令成功!");
+                } else {
+                    console.log("发送命令失败!");
+                }
+            };
+            var strData = v.trim();
+            var result = LODOP.SEND_PRINT_RAWDATA(strData);
+            console.log(result)
+        }
+    }
+
+    function showPrinters() {
+        LODOP = getLodop();
+
+        if (LODOP.VERSION) {
+            if (LODOP.CVERSION) {
+                console.log("当前有WEB打印服务C-Lodop可用! C-Lodop版本:" + LODOP.CVERSION + "(内含Lodop" + LODOP.VERSION + ")");
+            } else {
+                console.log("本机已成功安装了Lodop控件！ 版本号:" + LODOP.VERSION);
+            }
+        }
+
+        var count = LODOP.GET_PRINTER_COUNT();
+        var printerList = document.getElementById("printerList");
+        var html = "";
+        for (var i = 0; i < count; i++) {
+            var printerName = LODOP.GET_PRINTER_NAME(i);
+            html = html + "<option value=\"" + i + "\">" + printerName + "</option>";
+            if (printerName.indexOf("ZDesigner") !== -1){
+                console.log("(标签)打印机：" + i + "：" + printerName)
+            }else {
+                console.log("打印机：" + i + "：" + printerName)
+            }
+        }
+        printerList.innerHTML = html;
+    }
+
+    function printAcceptanceCode() {
+        LODOP = getLodop();
+        LODOP.SET_PRINT_MODE("SEND_RAW_DATA_ENCODE", "GBK");
+        if (LODOP.CVERSION) {
+            LODOP.On_Return = function (TaskID, Value) {
+                if (Value) {
+                    console.log("发送命令成功!");
+                } else {
+                    console.log("发送命令失败!");
+                }
+            };
+            var strData = "^XA\n" +
+                "^SEE:GB18030.DAT^FS\n" +
+                "^CWZ,E:SIMSUN.FNT\n" +
+                "^CI26\n" +
+                "^JMA^LL300^PW400^MD10^PR2^PON^LRN^LH0,0\n" +
+                "\n" +
+                "\n" +
+                "^FO0,80\n" +
+                "^AZN,35,35\n" +
+                "^FD 南京正雅医药集团有限公司验收单^FS\n" +
+                "\n" +
+                "^FO30,120\n" +
+                "^B7N,8,4,5,,N\n" +
+                "^FD " + "YS2021011500014" + " ^FS\n" +
+                "\n" +
+                "^FO80,200\n" +
+                "^A2N,20,10\n" +
+                "^FD " + "YS2021011500014" + " ^FS\n" +
+                "\n" +
+                "^XZ";
+            var result = LODOP.SEND_PRINT_RAWDATA(strData);
+            console.log(result)
+        }
+    }
+
+    function checkPrint() {
+        var paperHeigth = LODOP.GET_PRINTER_NAME('-1:PaperLength');
+        //默认打印机纸高
+        if (paperHeigth != 300) {
+            throw new Error("请检查默认打印机配置！");
+        }
+    }
+
+    function printStorageCode() {
+        LODOP = getLodop();
+        LODOP.SET_PRINT_MODE("SEND_RAW_DATA_ENCODE", "GBK");
+        if (LODOP.CVERSION) {
+            LODOP.On_Return = function (TaskID, Value) {
+                if (Value) {
+                    console.log("发送命令成功!");
+                } else {
+                    console.log("发送命令失败!");
+                }
+            };
+            var strData = "^XA\n" +
+                "^FO40,25\n" +
+                "^BCN,180,Y,N,N\n" +
+                "^FDA100-25-45^FS\n" +
+                "^XZ";
+            var result = LODOP.SEND_PRINT_RAWDATA(strData);
+            console.log(result)
+        }
+    }
+
+    function printStorageCode2() {
+        LODOP = getLodop();
+        LODOP.SET_PRINT_MODE("SEND_RAW_DATA_ENCODE", "GBK");
+        if (LODOP.CVERSION) {
+            LODOP.On_Return = function (TaskID, Value) {
+                if (Value) {
+                    console.log("发送命令成功!");
+                } else {
+                    console.log("发送命令失败!");
+                }
+            };
+            var strData = "^XA\n" +
+                "^FO5,25\n" +
+                "^BCN,180,Y,N,N\n" +
+                "^FDA005-A25-B45^FS\n" +
+                "^XZ";
+            var result = LODOP.SEND_PRINT_RAWDATA(strData);
+            console.log(result)
+        }
+    }
+
+    /**
+     * 打印物品码
+     */
+    function printGoodsCode(num) {
+        LODOP = getLodop();
+        var index = document.getElementById("printerList").value;
+        console.log(index)
+        LODOP.SET_PRINTER_INDEX(index)
+        for (let i = 0; i < num; i++) {
+            LODOP.SET_PRINT_MODE("SEND_RAW_DATA_ENCODE", "GBK");
+            if (LODOP.CVERSION) {
+                LODOP.On_Return = function (TaskID, Value) {
+                    if (Value) {
+                        console.log("发送命令成功!");
+                    } else {
+                        console.log("发送命令失败!");
+                    }
+                };
+                var strData = formatRowData("49667624772617830" + i);
+                console.log(strData)
+                var result = LODOP.SEND_PRINT_RAWDATA(strData);
+            }
+        }
+    }
+
+    function testMaxeLength() {
+        var finalStr = "";
+        for (let i = 0; i < 1000000; i++) {
+            finalStr += formatRowData("AAAAAA" + i);
+        }
+        console.log(finalStr.length)
+        //正式开始
+/*        LODOP = getLodop();
+        LODOP.SET_PRINT_MODE("SEND_RAW_DATA_ENCODE", "GBK");
+        if (LODOP.CVERSION) {
+            LODOP.On_Return = function (TaskID, Value) {
+                if (Value) {
+                    console.log("发送命令成功!");
+                } else {
+                    console.log("发送命令失败!");
+                }
+            };
+            var result = LODOP.SEND_PRINT_RAWDATA(finalStr);
+            console.log(result)
+        }*/
+    }
+
+
+    function formatRowData(content) {
+        var strData = "^XA\n" +
+            "^SEE:GB18030.DAT^FS\n" +
+            "^CWZ,E:SIMSUN.FNT\n" +
+            "^CI26\n" +
+            "^JMA^LL300^PW370^MD10^PR2^PON^LRN^LH0,0\n" +
+            "^MD15\n" +//打印浓度
+            "\n" +
+            "\n" +
+            "^FO0,20\n" +
+            "^AZN,25,25\n" +
+            "^FD ○切口皮肤组织牵开扩张器扩张器扩张器^FS\n" +
+            "\n" +
+            "^FO0,60\n" +
+            "^AZN,24,24\n" +
+            "^FD 规格:100/50-35/5^FS\n" +
+            "\n" +
+            "^FO0,85\n" +
+            "^AZN,24,24\n" +
+            "^FD 型号:标准型^FS\n" +
+            "\n" +
+            "^FO0,110\n" +
+            "^AZN,24,24\n" +
+            "^FD 效期:20200827     数量：100个^FS\n" +
+            "\n" +
+            "^FO30,138\n" +
+            "^B7N,8,4,5,,N\n" +
+            "^FD " + content + " ^FS\n" +
+            "\n" +
+            "^FO70,218\n" +
+            "^A2N,20,10\n" +
+            "^FD " + content + " ^FS\n" +
+            "\n" +
+            "^XZ";
+        return strData;
+    }
+</script>
+</html>
